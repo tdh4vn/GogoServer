@@ -9,8 +9,7 @@ var userSchema = new Schema({
     facebook_id : String,
     google_id : String,
     email : String,
-    last_name : String,
-    first_name : String,
+    name : String,
     avatar : String,
     banner : String,
     follows : [{
