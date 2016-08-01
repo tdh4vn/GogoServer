@@ -5,6 +5,7 @@
 var Post = require('../model/post');
 var ImageGroupController = require('../controller/image_group');
 var async = require('async');
+var mongoose = require('mongoose');
 
 exports.upPost = function (req, res) {
     var imageGroups = req.body.image_groups;
@@ -12,7 +13,7 @@ exports.upPost = function (req, res) {
         function (done) {
             var newPost = new Post({
                 note : req.body.note,
-                author : req.body.user._id,
+                author : req.user._id,
                 user_tagged : req.body.user_tagged,
                 category : req.body.category,
                 likes : [],
@@ -77,9 +78,6 @@ exports.getPosts = function (opts, page, callback) {
                     name : post.author.name,
                     avatar : post.author.avatar
                 };
-                var category = {
-                    id : post.category._id
-                };
                 var comments = [];
                 var likes = [];
                 var userTagged = [];
@@ -137,7 +135,7 @@ exports.getPosts = function (opts, page, callback) {
                 result.push({
                     id : post._id,
                     author : author,
-                    category : category,
+                    category : post.category._id,
                     comments : comments,
                     likes : likes,
                     user_tagged : userTagged,
@@ -147,7 +145,6 @@ exports.getPosts = function (opts, page, callback) {
                     location : location
                 });
                 cb1();
-
             }, function (err) {
                 return callback(err, result);
             })
