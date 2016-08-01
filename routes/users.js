@@ -1,8 +1,9 @@
 var express = require('express');
 var router = express.Router();
-var User = require('.app/model/user');
-var UserCtr = require('.app/controller/user');
-var PostCtr = require('.app/controller/post');
+var UserCtr = require('../app/controller/user');
+var User = require('../app/model/user');
+
+var PostCtr = require('../app/controller/post');
 // var User = require('../app/model/user');
 
 

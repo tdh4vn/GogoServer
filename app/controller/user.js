@@ -3,8 +3,8 @@
  */
 var async = require('async');
 var UUID = require('node-uuid');
-var User = require('.app/model/user');
-var Post = require('.app/controller/post');
+var User = require('../model/user');
+var Post = require('../controller/post');
 var mongoose = require('mongoose');
 
 
