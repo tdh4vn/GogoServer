@@ -20,7 +20,11 @@ exports.upPost = function (req, res) {
                 created : Date.now,
                 comments : [],
                 image_groups : [],
-                location : req.body.location
+                location : {
+                    province : req.body.province,
+                    district : req.body.district,
+                    town : req.body.town
+                }
             });
             done(null, newPost);
         },

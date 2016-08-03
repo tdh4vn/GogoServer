@@ -6,6 +6,7 @@ var UUID = require('node-uuid');
 var User = require('../model/user');
 var Post = require('../controller/post');
 var mongoose = require('mongoose');
+var fbHelper = require('../helper/facebook_helper');
 
 
 exports.login = function (req, res) {
@@ -51,12 +52,43 @@ exports.login = function (req, res) {
                 });
             },
             function (user, firstLogin, done) {
-                Post.getPosts({}, 1, function (err, posts) {
-                    done(err, user, firstLogin, posts);
-                });
+                if (!firstLogin){
+                    Post.getPosts({}, 1, function (err, posts) {
+                        done(err, user, posts, null);
+                    });
+                } else {
+                    async.parallel({
+                        rs_posts: function (callback) {
+                            Post.getPosts({}, 1, function (err, posts) {
+                                callback(err, posts);
+                            });
+                        },
+                        rs_friends: function (callback) {
+                            //get friend can follow
+                            if (fbID) {
+                                //get friend with facebook
+                                fbHelper.getFacebookFriends(req.body.facebook_token, fbID
+                                    , function (err, ids) {
+                                        if (err){
+                                            callback(err, null);
+                                        } else {
+                                            findFriendByFacebookIds(ids, function (err, friends) {
+                                                callback(err, friends);
+                                            })
+                                        }
+                                    })
+                            } else {
+                                //get friend with gooogle +
+                            }
+                        }
+                    }, function (err, results) {
+                        done(err, results.rs_posts, results.rs_friends);
+                    })
+                }
+
             }
         ],
-        function (err, user, firstLogin, posts) {
+        function (err, user, posts, friends) {
             if (err){
                 res.json({
                     code : 6,
@@ -70,7 +102,8 @@ exports.login = function (req, res) {
                     avatar : user.avatar,
                     name : user.name,
                     email : user.email,
-                    posts : posts
+                    posts : posts,
+                    friends : friends
                 });
             }
         }
@@ -171,6 +204,37 @@ exports.unfollowUser = function (req, res){
                     code : 1,
                     message : 'Hủy theo dõi thành công'
                 });
+            }
+        });
+};
+
+/**
+ * find friends's user by list friend in user facebook's
+ * @param fbids
+ * @param callback
+ */
+var findFriendByFacebookIds = function (fbids, callback) {
+    var friendrq = [];
+
+    User.find({facebook_id: {$in: ids}})
+        .exec(function (err, users) {
+            if(err){
+                callback(err, null)
+            } else {
+                async.each(
+                    users,
+                    function (user, cb) {
+                        friendrq.push({
+                            id : user._id,
+                            avatar : user.avatar,
+                            name : user.name
+                        });
+                        cb();
+                    },
+                    function (err) {
+                        callback(err, friendrq);
+                    }
+                );
             }
         });
 };
