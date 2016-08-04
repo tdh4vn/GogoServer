@@ -6,8 +6,7 @@ var UUID = require('node-uuid');
 var User = require('../model/user');
 var Post = require('../controller/post');
 var mongoose = require('mongoose');
-var fbHelper = require('../helper/facebook_helper');
-
+var fbHelper = require('../helper/facebook');
 
 exports.login = function (req, res) {
     var fbID = req.body.facebook_id | '-';
@@ -67,16 +66,20 @@ exports.login = function (req, res) {
                             //get friend can follow
                             if (fbID) {
                                 //get friend with facebook
-                                fbHelper.getFacebookFriends(req.body.facebook_token, fbID
-                                    , function (err, ids) {
+                                fbHelper.getFbData(req.body.facebook_token, fbID
+                                    , function (err, ids, url) {
                                         if (err){
                                             callback(err, null);
                                         } else {
+                                            if (url) {
+                                                user.tmp_next_paging = url;
+                                                user.save();
+                                            }
                                             findFriendByFacebookIds(ids, function (err, friends) {
                                                 callback(err, friends);
                                             })
                                         }
-                                    })
+                                    });
                             } else {
                                 //get friend with gooogle +
                             }
@@ -108,6 +111,38 @@ exports.login = function (req, res) {
             }
         }
     );
+};
+
+
+/**
+ * get friend suggest of facebook
+ * @param req
+ * @param res
+ */
+exports.getFriendSuggest = function (req, res) {
+    if (req.user.tmp_next_paging){
+        res.json({
+
+        });
+    } else {
+        fbHelper.getFbDataByUrl(req.user.tmp_next_paging
+            , function (err, ids, url) {
+                if (err){
+                    res.json({
+                        code : 3
+                    });
+                } else {
+                    if (url) {
+                        user.tmp_next_paging = url;
+                        user.save();
+                    }
+                    findFriendByFacebookIds(ids, function (err, friends) {
+                        callback(err, friends);
+                    })
+                }
+            });
+    }
+
 };
 
 exports.logout = function (req, res) {
