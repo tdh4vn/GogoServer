@@ -63,6 +63,31 @@ exports.upPost = function (req, res) {
     })
 };
 
+///post/:user_id?page=1
+exports.getTimeLineByID = function (req, res) {
+    Post.getPosts({author : req.params.user_id}, req.query.page,
+        function (err, result) {
+            if (err){
+                res.json({
+                    code : 3,
+                    message : 'Có lỗi xảy ra, Vui lòng thử lại'
+                });
+            } else {
+                res.json({
+                    code : 1,
+                    message : '',
+                    result : result
+                });
+            }
+        })
+};
+
+/**
+ * get timeline of user
+ */
+
+
+
 exports.getPosts = function (opts, page, callback) {
     var result = [];
     Post.find(opts)

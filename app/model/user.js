@@ -18,8 +18,7 @@ var userSchema = new Schema({
     }],
     birthday : {type: Date, default: Date.now},
     access_token: String,
-    status : Number,//banner or no
-    tmp_next_paging : String
+    status : Number
 });
 
 module.exports = mongoose.model('User', userSchema);
